@@ -38,8 +38,10 @@ function MainFrame:OnLoad()
 
     self:RegisterMessage("VRK_BAG_COUNT_CHANGED", "Refresh")
     self:RegisterMessage("VRK_LIST_CHANGED", "Refresh")
+    self:RegisterMessage("VRK_PROFILE_CHANGED", "Refresh")
     self:RegisterEvent("BAG_UPDATE", "Refresh")
 
+    self:RefreshProfileButton()
     self:Refresh()
 end
 
@@ -57,12 +59,22 @@ function MainFrame:BuildTitleBar()
 
     local titleText = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleText:SetPoint("LEFT", titleBar, "LEFT", 8, 0)
-    titleText:SetPoint("RIGHT", titleBar, "RIGHT", -36, 0)
     titleText:SetText("|cffFFD700VRK|r — Junk Manager  |cff808080v" .. VRK.version .. "|r")
+
+    -- Profile button (right of title)
+    local profileBtn = CreateFrame("Button", nil, titleBar, "UIPanelButtonTemplate")
+    profileBtn:SetSize(90, 20)
+    profileBtn:SetPoint("LEFT", titleText, "RIGHT", 8, 0)
+    local Lists = VRK:GetModule("Lists")
+    profileBtn:SetText(Lists:GetActiveProfileName())
+    profileBtn:SetScript("OnClick", function()
+        MainFrame:ShowProfileMenu(profileBtn)
+    end)
+    self.profileBtn = profileBtn
 
     local sep = titleBar:CreateTexture(nil, "BOTTOM")
     sep:SetPoint("BOTTOMLEFT",  titleBar, "BOTTOMLEFT", 0, 0)
-    sep:SetPoint("BOTTOMRIGHT", titleBar, "BOTTOMRIGHT", 0, 0)
+    sep:SetPoint("BOTTOMRIGHT", titleBar, "BOTTOMRIGHT", -36, 0)
     sep:SetHeight(1)
     sep:SetColorTexture(0.4, 0.35, 0.2)
 
@@ -313,6 +325,7 @@ end
 -- ── Refresh ────────────────────────────────────────────────────────────────────
 
 function MainFrame:Refresh()
+    self:RefreshProfileButton()
     self:RefreshBagList()
     self:RefreshPanes()
 end
@@ -323,6 +336,7 @@ function MainFrame:RefreshBagList()
     if not self.itemRows then self.itemRows = {} end
 
     local items = {}
+    local Lists = VRK:GetModule("Lists")
     for bag = 0, 4 do
         local numSlots = GetContainerNumSlots(bag)
         for slot = 1, numSlots do
@@ -330,16 +344,21 @@ function MainFrame:RefreshBagList()
             if link then
                 local itemID = tonumber(string.match(link, "item:(%d+)"))
                 if itemID then
-                    local name, _, quality, _, _, _, _, _, _, tex, vPrice = GetItemInfo(link)
-                    local _, count = GetContainerItemInfo(bag, slot)
-                    tinsert(items, {
-                        bag = bag, slot = slot, link = link, itemID = itemID,
-                        name = name or "?",
-                        quality = quality or 1,
-                        texture = tex,
-                        vendorPrice = vPrice or 0,
-                        stackCount = count or 1,
-                    })
+                    -- Skip items on the KEEP list
+                    if Lists and Lists:Contains("protect", itemID) then
+                        -- skip
+                    else
+                        local name, _, quality, _, _, _, _, _, _, tex, vPrice = GetItemInfo(link)
+                        local _, count = GetContainerItemInfo(bag, slot)
+                        tinsert(items, {
+                            bag = bag, slot = slot, link = link, itemID = itemID,
+                            name = name or "?",
+                            quality = quality or 1,
+                            texture = tex,
+                            vendorPrice = vPrice or 0,
+                            stackCount = count or 1,
+                        })
+                    end
                 end
             end
         end
@@ -614,5 +633,90 @@ function MainFrame:RestorePosition()
         local sc = f:GetEffectiveScale()
         f:ClearAllPoints()
         f:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", s.x / sc, s.y / sc)
+    end
+end
+
+-- ── Profile Menu ──────────────────────────────────────────────────────────────
+
+function MainFrame:ShowProfileMenu(btn)
+    local Lists  = VRK:GetModule("Lists")
+    local Export = VRK:GetModule("Export")
+
+    local menu = _G["VRK_ProfileDropDown"] or CreateFrame("Frame", "VRK_ProfileDropDown", UIParent, "UIDropDownMenuTemplate")
+    UIDropDownMenu_Initialize(menu, function(frame, level)
+        local active = Lists:GetActiveProfileName()
+
+        -- Profiles section
+        local t = { text = "Profile", isTitle = true, notCheckable = true }
+        UIDropDownMenu_AddButton(t, level)
+
+        for _, name in ipairs(Lists:GetAllProfileNames()) do
+            local t = { text = name, checked = name == active, notCheckable = false,
+                func = function()
+                    Lists:SetActiveProfile(name)
+                    self:RefreshProfileButton()
+                    self:Refresh()
+                end }
+            UIDropDownMenu_AddButton(t, level)
+        end
+
+        -- Divider
+        UIDropDownMenu_AddButton({ text = "", disabled = true, notCheckable = true }, level)
+
+        -- New profile
+        UIDropDownMenu_AddButton({
+            text = "+ New Profile (copies Default)",
+            notCheckable = true,
+            func = function()
+                local name = "Profile " .. date("%H:%M")
+                Lists:CreateProfile(name)
+                Lists:SetActiveProfile(name)
+                self:RefreshProfileButton()
+                self:Refresh()
+                VRK:Print("Profile: |cffFFD700" .. name .. "|r")
+            end
+        }, level)
+
+        -- Delete (not Default)
+        if active ~= "Default" then
+            UIDropDownMenu_AddButton({
+                text = "Delete: " .. active,
+                notCheckable = true,
+                func = function()
+                    Lists:DeleteProfile(active)
+                    self:RefreshProfileButton()
+                    self:Refresh()
+                end
+            }, level)
+        end
+
+        -- Divider
+        UIDropDownMenu_AddButton({ text = "", disabled = true, notCheckable = true }, level)
+
+        -- Export
+        UIDropDownMenu_AddButton({
+            text = "Export (show string)",
+            notCheckable = true,
+            func = function() Export:ShowPopup() end
+        }, level)
+
+        UIDropDownMenu_AddButton({
+            text = "Import (paste string)",
+            notCheckable = true,
+            func = function()
+                VRK:Print("Usage: /vrk import <VRK:v1:...>")
+            end
+        }, level)
+
+    end, "MENU")
+
+    CloseDropDownMenus()  -- close any other open menus first
+    ToggleDropDownMenu(1, nil, menu, btn, 0, 0)
+end
+
+function MainFrame:RefreshProfileButton()
+    local Lists = VRK:GetModule("Lists")
+    if self.profileBtn then
+        self.profileBtn:SetText(Lists:GetActiveProfileName())
     end
 end
