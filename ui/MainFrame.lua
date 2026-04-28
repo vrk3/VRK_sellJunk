@@ -114,8 +114,49 @@ function MainFrame:BuildBagList()
     hdr:SetText("|cffFFD700All Bag Items|r  |cff808080Right=SELL | Left=DESTROY | Middle=KEEP|r")
     hdr:SetTextColor(0.7, 0.65, 0.5)
 
+    -- Search box
+    local searchBox = CreateFrame("EditBox", nil, listFrame)
+    searchBox:SetSize(160, 22)
+    searchBox:SetPoint("TOPRIGHT", listFrame, "TOPRIGHT", -28, -4)
+    searchBox:SetFontObject("ChatFontNormal")
+    searchBox:SetTextInsets(4, 4, 2, 2)
+    searchBox:SetBackdrop({
+        bgFile   = "Interface\\ChatFrame\\ChatFrameBackground",
+        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+        edgeSize = 8,
+    })
+    searchBox:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
+    searchBox:SetAutoFocus(false)
+    searchBox:SetTextInsets(6, 6, 4, 4)
+
+    local searchLbl = listFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    searchLbl:SetPoint("RIGHT", searchBox, "LEFT", -6, 0)
+    searchLbl:SetText("Search:")
+    searchLbl:SetTextColor(0.7, 0.65, 0.5)
+
+    local clearBtn = CreateFrame("Button", nil, listFrame)
+    clearBtn:SetSize(20, 20)
+    clearBtn:SetPoint("RIGHT", searchBox, "LEFT", -4, 0)
+    clearBtn:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+    clearBtn:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
+    clearBtn:SetScript("OnClick", function()
+        searchBox:SetText("")
+        searchBox:ClearFocus()
+    end)
+
+    searchBox:SetScript("OnTextChanged", function(self)
+        MainFrame.searchFilter = strlower(self:GetText() or "")
+        MainFrame:RefreshBagList()
+    end)
+    searchBox:SetScript("OnEscapePressed", function(self)
+        self:SetText("")
+        self:ClearFocus()
+    end)
+    self.searchBox = searchBox
+    self.searchFilter = ""
+
     local scroll = CreateFrame("ScrollFrame", "VRK_BagListScroll", listFrame, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT",   listFrame, "TOPLEFT",   6, -24)
+    scroll:SetPoint("TOPLEFT",   listFrame, "TOPLEFT",   6, -52)
     scroll:SetPoint("BOTTOMRIGHT", listFrame, "BOTTOMRIGHT", -24, 6)
     self.scrollFrame = scroll
 
@@ -302,6 +343,18 @@ function MainFrame:RefreshBagList()
                 end
             end
         end
+    end
+
+    -- Filter by search text
+    local filter = self.searchFilter or ""
+    if filter ~= "" then
+        local filtered = {}
+        for _, item in ipairs(items) do
+            if strlower(item.name):find(filter, 1, true) then
+                tinsert(filtered, item)
+            end
+        end
+        items = filtered
     end
 
     local ROW_H   = 26
