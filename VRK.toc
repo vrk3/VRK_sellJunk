@@ -1,0 +1,33 @@
+## Interface: 30300
+## Title: VRK - Junk Manager
+## Notes: Sell, destroy, and manage junk. Full UI, minimap button, remembered choices.
+## Author: vraku
+## Version: 1.1.0
+## SavedVariables: VRK_DB
+
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+libs\AceEvent-3.0\AceEvent-3.0.lua
+libs\AceDB-3.0\AceDB-3.0.lua
+libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+libs\LibDBIcon-1.0\LibDBIcon-1.0.lua
+
+VRK.lua
+
+data\DefaultJunk.lua
+
+modules\Lists.lua
+modules\Merchant.lua
+modules\Destroy.lua
+modules\BagScan.lua
+modules\Tooltip.lua
+modules\Loot.lua
+modules\LootRoll.lua
+modules\Export.lua
+
+ui\ListPanel.lua
+ui\HistoryPanel.lua
+ui\SettingsPanel.lua
+ui\MainFrame.lua
+ui\MinimapButton.lua
+ui\DragDropWindow.lua

@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp C:/tmp/1.png /tmp/s1.png)",
+      "Bash(cp C:/tmp/2.png /tmp/s2.png)",
+      "PowerShell($b64 = [Convert]::ToBase64String\\([IO.File]::ReadAllBytes\\(\"C:\\\\tmp\\\\s1.png\"\\)\\); Write-Output $b64)",
+      "PowerShell($b64 = [Convert]::ToBase64String\\([IO.File]::ReadAllBytes\\(\"C:\\\\tmp\\\\s2.png\"\\)\\); Write-Output $b64)",
+      "Bash(cp /tmp/s1.png \"F:/Ascension/resources/ascension-live/Interface/AddOns/VRK/s1.png\")",
+      "Bash(cp /tmp/s2.png \"F:/Ascension/resources/ascension-live/Interface/AddOns/VRK/s2.png\")",
+      "Bash(python3 -c ' *)",
+      "Bash(node *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\(\"$env:TEMP\\\\s1.png\"\\); Write-Output \"s1.png: $\\($img.Width\\)x$\\($img.Height\\)\"; $img.Dispose\\(\\))",
+      "Bash(identify \"/c/Users/iorda/AppData/Local/Temp/s1.png\" \"/c/Users/iorda/AppData/Local/Temp/s2.png\")",
+      "Bash(xxd)",
+      "PowerShell(Out-File *)",
+      "Bash(cp \"/c/Users/iorda/AppData/Local/Temp/s1.png\" \"/c/Users/iorda/.claude/s1.png\")",
+      "Bash(cp \"/c/Users/iorda/AppData/Local/Temp/s2.png\" \"/c/Users/iorda/.claude/s2.png\")",
+      "Bash(cp \"/c/Users/iorda/AppData/Local/Temp/s1.png\" \"F:/Ascension/resources/ascension-live/Interface/AddOns/VRK/test_s1.png\")",
+      "Bash(cp \"/c/Users/iorda/AppData/Local/Temp/s2.png\" \"F:/Ascension/resources/ascension-live/Interface/AddOns/VRK/test_s2.png\")",
+      "PowerShell(Add-Type -AssemblyName System.Drawing; $bmp = [System.Drawing.Image]::FromFile\\(\"$env:TEMP\\\\s1.png\"\\); $bmp.Dispose\\(\\); Write-Output \"s1.png is a valid image: $\\($bmp.Width\\)x$\\($bmp.Height\\)\")",
+      "PowerShell(Get-Item \"C:\\\\tmp\\\\1.png\" | Select-Object Name, Length; [Convert]::ToBase64String\\(\\(Get-Content \"C:\\\\tmp\\\\1.png\" -Raw -Encoding Byte\\)[0..200]\\))",
+      "PowerShell($f = [System.IO.File]::ReadAllBytes\\(\"C:\\\\tmp\\\\1.png\"\\); Write-Host \"Size: $\\($f.Length\\)\"; Write-Host \"First bytes: $\\([BitConverter]::ToString\\($f[0..15]\\)\\)\")",
+      "mcp__ide__executeCode",
+      "Bash(winget install *)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}

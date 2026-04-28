@@ -1,0 +1,5 @@
+# Screenshots
+*.png
+
+# SavedVariables (contains player-specific data)
+*.lua.bak
