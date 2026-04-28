@@ -3,7 +3,7 @@ local AceDB    = LibStub("AceDB-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 
 VRK = {}
-VRK.version = "1.1.0"
+VRK.version = "1.2.0"
 VRK._modules = {}
 VRK.lastHovered = nil  -- { bag, slot, link } set by bag button OnEnter hooks
 VRK._errorLog = {}     -- [{ id, timestamp, text }] — rolling, max 10

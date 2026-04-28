@@ -2,7 +2,7 @@
 ## Title: VRK - Junk Manager
 ## Notes: Sell, destroy, and manage junk. Full UI, minimap button, remembered choices.
 ## Author: vraku
-## Version: 1.1.0
+## Version: 1.2.0
 ## SavedVariables: VRK_DB
 
 libs\LibStub\LibStub.lua
